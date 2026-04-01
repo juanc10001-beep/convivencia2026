@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Asistencia</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f6f8;
+      color: #222;
+    }
+    h1{
+      margin-bottom: 14px;
+    }
+    .topbar{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    select, button, input{
+      font-size: 14px;
+      padding: 6px 8px;
+    }
+    button{
+      cursor: pointer;
+    }
+    .status{
+      margin: 8px 0 14px 0;
+      font-size: 13px;
+      color: #444;
+    }
+    .table-wrap{
+      overflow-x: auto;
+      background: white;
+      border: 1px solid #ccc;
+    }
+    table{
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1000px;
+      background: white;
+    }
+    th, td{
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    th{
+      background: #2c3e50;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td.left{
+      text-align: left;
+    }
+    td input[type="text"]{
+      width: 180px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <h1>Control de Asistencia</h1>
+
+  <div class="topbar">
+    <label for="curso"><strong>Curso:</strong></label>
+    <select id="curso"></select>
+    <button id="btnAgregarClase">Agregar clase</button>
+    <button id="btnGuardar">Guardar</button>
+  </div>
+
+  <div class="status" id="status">Cargando información...</div>
+
+  <div class="table-wrap">
+    <table id="tabla"></table>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfdtpGBZoqLyqC3GDFQad2SGMjHnWOzQ6HMqgX5E0j5ogWi1GdpBFQexXOmlsZoqPKYg/exec";
+
+    let data = { courses: {} };
+    let currentCourse = "";
+
+    const cursoSelect = document.getElementById("curso");
+    const tabla = document.getElementById("tabla");
+    const statusBox = document.getElementById("status");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const btnAgregarClase = document.getElementById("btnAgregarClase");
+
+    function setStatus(msg) {
+      statusBox.textContent = msg;
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function cargarDatos() {
+      try {
+        setStatus("Cargando información...");
+        const res = await fetch(SCRIPT_URL);
+        const json = await res.json();
+
+        if (!json.ok) {
+          throw new Error(json.error || "No fue posible cargar los datos.");
+        }
+
+        data = json.config || { courses: {} };
+
+        const cursos = Object.keys(data.courses || {});
+        cursoSelect.innerHTML = "";
+
+        if (!cursos.length) {
+          setStatus("No hay cursos cargados.");
+          tabla.innerHTML = "";
+          return;
+        }
+
+        cursos.forEach(curso => {
+          const op = document.createElement("option");
+          op.value = curso;
+          op.textContent = curso;
+          cursoSelect.appendChild(op);
+        });
+
+        currentCourse = cursos[0];
+        cursoSelect.value = currentCourse;
+
+        renderTabla();
+        setStatus("Datos cargados correctamente.");
+      } catch (error) {
+        console.error(error);
+        setStatus("Error al cargar.");
+      }
+    }
+
+    function ensureCourseStructure(courseName) {
+      if (!data.courses[courseName]) {
+        data.courses[courseName] = {
+          students: [],
+          days: [],
+          records: {}
+        };
+      }
+    }
+
+    function ensureDayRecord(course, studentIndex, dayId) {
+      if (!course.records[studentIndex]) course.records[studentIndex] = {};
+      if (!course.records[studentIndex][dayId]) {
+        course.records[studentIndex][dayId] = {
+          asist: "present",
+          llam: "",
+          cel: "",
+          uni: ""
+        };
+      }
+      return course.records[studentIndex][dayId];
+    }
+
+    function renderTabla() {
+      ensureCourseStructure(currentCourse);
+      const c = data.courses[currentCourse];
+
+      let html = "<tr><th>#</th><th>Apellidos</th><th>Nombres</th>";
+
+      c.days.forEach(d => {
+        html += `<th>${d.date}<br>Asistencia</th>
+                 <th>Llamado</th>
+                 <th>Celular</th>
+                 <th>Uniforme</th>`;
+      });
+
+      html += "<th>Observación</th></tr>";
+
+      c.students.forEach((s,i) => {
+        html += `<tr><td>${i+1}</td><td>${s.apellidos}</td><td>${s.nombres}</td>`;
+
+        c.days.forEach(d => {
+          let r = ensureDayRecord(c, i, d.id);
+
+          html += `
+          <td>
+            <select onchange="setVal(${i},'${d.id}','asist',this.value)">
+              <option value="present" ${r.asist=="present"?"selected":""}>Asiste</option>
+              <option value="absent" ${r.asist=="absent"?"selected":""}>Inasistencia</option>
+              <option value="late" ${r.asist=="late"?"selected":""}>Tarde</option>
+              <option value="excuse" ${r.asist=="excuse"?"selected":""}>Excusa</option>
+            </select>
+          </td>
+
+          <td>
+            <select onchange="setVal(${i},'${d.id}','llam',this.value)">
+              <option value=""></option>
+              <option value="1" ${r.llam=="1"?"selected":""}>Llamado 1</option>
+              <option value="2" ${r.llam=="2"?"selected":""}>Llamado 2</option>
+              <option value="3" ${r.llam=="3"?"selected":""}>Llamado 3</option>
+            </select>
+          </td>
+
+          <td>
+            <select onchange="setVal(${i},'${d.id}','cel',this.value)">
+              <option value=""></option>
+              <option value="1" ${r.cel=="1"?"selected":""}>Celular 1</option>
+              <option value="2" ${r.cel=="2"?"selected":""}>Celular 2</option>
+              <option value="3" ${r.cel=="3"?"selected":""}>Celular 3</option>
+            </select>
+          </td>
+
+          <td>
+            <select onchange="setVal(${i},'${d.id}','uni',this.value)">
+              <option value=""></option>
+              <option value="mal" ${r.uni=="mal"?"selected":""}>Uso inadecuado</option>
+            </select>
+          </td>`;
+        });
+
+        let obs = (c.records[i]||{}).obs || "";
+
+        html += `<td><input value="${obs}" onchange="setObs(${i},this.value)"></td></tr>`;
+      });
+
+      tabla.innerHTML = html;
+    }
+
+    function setVal(i,d,t,v){
+      let c = data.courses[currentCourse];
+      if(!c.records[i]) c.records[i]={};
+      if(!c.records[i][d]) c.records[i][d]={};
+      c.records[i][d][t]=v;
+    }
+
+    function setObs(i,v){
+      let c = data.courses[currentCourse];
+      if(!c.records[i]) c.records[i]={};
+      c.records[i].obs = v;
+    }
+
+    function addDay(){
+      let c = data.courses[currentCourse];
+      let id = Date.now();
+      let date = new Date().toISOString().slice(0,10);
+
+      c.days.push({id:id,date:date});
+
+      c.students.forEach((s,i)=>{
+        if(!c.records[i]) c.records[i]={};
+        c.records[i][id]={asist:"present"};
+      });
+
+      renderTabla();
+    }
+
+    async function guardar(){
+      try{
+        await fetch(SCRIPT_URL,{
+          method:"POST",
+          body:JSON.stringify(data)
+        });
+        alert("Guardado");
+      }catch(e){
+        alert("Error");
+      }
+    }
+
+    document.getElementById("btnGuardar").onclick = guardar;
+    document.getElementById("btnAgregarClase").onclick = addDay;
+
+    cargarDatos();
+
+  </script>
+</body>
+</html>
