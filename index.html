@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Asistencia</title>
+<style>
+body{font-family:Arial;padding:20px;background:#f4f6f8}
+table{border-collapse:collapse;width:100%;background:white}
+th,td{border:1px solid #ccc;padding:5px;text-align:center}
+th{background:#2c3e50;color:white}
+select,input{width:100%}
+button{margin:10px 5px;padding:8px 15px}
+</style>
+</head>
+<body>
+
+<h2>Control de Asistencia</h2>
+
+<select id="curso"></select>
+<button onclick="addDay()">Agregar Clase</button>
+<button onclick="guardar()">Guardar</button>
+
+<table id="tabla"></table>
+
+<script>
+
+const URL = "https://script.google.com/macros/s/AKfycbwfdtpGBZoqLyqC3GDFQad2SGMjHnWOzQ6HMqgX5E0j5ogWi1GdpBFQexXOmlsZoqPKYg/exec";
+
+let data = {courses:{}};
+let current = "";
+
+// CARGAR DATOS
+async function cargar(){
+  try{
+    let res = await fetch(URL);
+    let json = await res.json();
+
+    data = json.config || {courses:{}};
+
+    const cursos = Object.keys(data.courses);
+    const select = document.getElementById("curso");
+
+    select.innerHTML="";
+    cursos.forEach(c=>{
+      let op=document.createElement("option");
+      op.value=c;
+      op.textContent=c;
+      select.appendChild(op);
+    });
+
+    if(cursos.length>0){
+      current = cursos[0];
+      render();
+    }
+
+  }catch(e){
+    alert("Error al cargar datos");
+    console.error(e);
+  }
+}
+
+// CAMBIO DE CURSO
+document.getElementById("curso").onchange = e=>{
+  current = e.target.value;
+  render();
+};
+
+// RENDER TABLA
+function render(){
+
+  const c = data.courses[current];
+  if(!c) return;
+
+  let html = "<tr><th>#</th><th>Apellidos</th><th>Nombres</th>";
+
+  c.days.forEach(d=>{
+    html+=`<th>${d.date}<br>Asistencia</th>
+           <th>Llamado</th>
+           <th>Celular</th>
+           <th>Uniforme</th>`;
+  });
+
+  html+=`<th>Observación</th></tr>`;
+
+  c.students.forEach((s,i)=>{
+    html+=`<tr><td>${i+1}</td><td>${s.apellidos}</td><td>${s.nombres}</td>`;
+
+    c.days.forEach(d=>{
+      let r = (c.records[i]||{})[d.id]||{};
+
+      html+=`
+      <td>
+        <select onchange="setVal(${i},${d.id},'asist',this.value)">
+          <option value="present" ${!r.asist || r.asist==="present"?"selected":""}>Asiste</option>
+          <option value="absent" ${r.asist==="absent"?"selected":""}>Inasistencia</option>
+          <option value="late" ${r.asist==="late"?"selected":""}>Tarde</option>
+          <option value="excuse" ${r.asist==="excuse"?"selected":""}>Excusa</option>
+        </select>
+      </td>
+
+      <td>
+        <select onchange="setVal(${i},${d.id},'llam',this.value)">
+          <option value=""></option>
+          <option value="1" ${r.llam=="1"?"selected":""}>Llamado 1</option>
+          <option value="2" ${r.llam=="2"?"selected":""}>Llamado 2</option>
+          <option value="3" ${r.llam=="3"?"selected":""}>Llamado 3</option>
+        </select>
+      </td>
+
+      <td>
+        <select onchange="setVal(${i},${d.id},'cel',this.value)">
+          <option value=""></option>
+          <option value="1" ${r.cel=="1"?"selected":""}>Celular 1</option>
+          <option value="2" ${r.cel=="2"?"selected":""}>Celular 2</option>
+          <option value="3" ${r.cel=="3"?"selected":""}>Celular 3</option>
+        </select>
+      </td>
+
+      <td>
+        <select onchange="setVal(${i},${d.id},'uni',this.value)">
+          <option value=""></option>
+          <option value="mal" ${r.uni=="mal"?"selected":""}>Uso inadecuado</option>
+        </select>
+      </td>
+      `;
+    });
+
+    let obs = (c.records[i]||{}).obs || "";
+
+    html+=`<td>
+      <input value="${obs}" onchange="setObs(${i},this.value)">
+    </td></tr>`;
+  });
+
+  document.getElementById("tabla").innerHTML = html;
+}
+
+// GUARDAR VALORES
+function setVal(i,d,t,v){
+  let c = data.courses[current];
+  if(!c.records[i]) c.records[i]={};
+  if(!c.records[i][d]) c.records[i][d]={};
+  c.records[i][d][t]=v;
+}
+
+// OBSERVACIÓN
+function setObs(i,v){
+  let c = data.courses[current];
+  if(!c.records[i]) c.records[i]={};
+  c.records[i].obs = v;
+}
+
+// AGREGAR CLASE
+function addDay(){
+  let c = data.courses[current];
+  let id = Date.now();
+  let date = new Date().toISOString().slice(0,10);
+
+  c.days.push({id:id,date:date});
+
+  c.students.forEach((s,i)=>{
+    if(!c.records[i]) c.records[i]={};
+    c.records[i][id]={asist:"present"};
+  });
+
+  render();
+}
+
+// GUARDAR
+async function guardar(){
+  try{
+    await fetch(URL,{
+      method:"POST",
+      body:JSON.stringify(data)
+    });
+    alert("Guardado correctamente");
+  }catch(e){
+    alert("Error al guardar");
+  }
+}
+
+cargar();
+
+</script>
+</body>
+</html>
