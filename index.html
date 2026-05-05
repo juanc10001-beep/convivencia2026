@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistencia & Convivencia 2026</title>
+<style>
+  :root {
+    --primary: #1a5276;
+    --primary-light: #2e86c1;
+    --bg: #f4f6f9;
+    --white: #ffffff;
+    --border: #dce3ec;
+    --text: #1c2833;
+    --text-muted: #7f8c8d;
+    --present: #1e8449;
+    --present-bg: #eafaf1;
+    --absent: #c0392b;
+    --absent-bg: #fdedec;
+    --late: #d68910;
+    --late-bg: #fef9e7;
+    --excuse: #2471a3;
+    --excuse-bg: #ebf5fb;
+    --empty: #bdc3c7;
+    --uni-ok: #1e8449;
+    --uni-mal: #c0392b;
+    --cel-conf: #7d3c98;
+    --llam1: #d4ac0d;
+    --llam2: #ca6f1e;
+    --llam3: #c0392b;
+    --row-even: #f8fafc;
+    --row-hover: #eaf2fb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .header-top { display:flex; align-items:center; gap:14px; padding:13px 22px; }
+  .header-top h1 { font-size:1.18rem; font-weight:700; }
+  .header-top .sub { font-size:0.73rem; opacity:0.72; margin-top:2px; }
+
+  .tab-bar { display:flex; overflow-x:auto; background:rgba(0,0,0,0.18); padding:0 16px; gap:2px; }
+  .tab-btn { background:transparent; border:none; color:rgba(255,255,255,0.7); padding:9px 16px; font-size:0.79rem; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; transition:all .15s; }
+  .tab-btn:hover { color:white; background:rgba(255,255,255,0.08); }
+  .tab-btn.active { color:white; border-bottom-color:#f39c12; background:rgba(255,255,255,0.1); }
+
+  #syncBar { display:flex; align-items:center; gap:8px; padding:6px 20px; font-size:0.74rem; font-weight:600; border-bottom:1px solid var(--border); background:#eafaf1; color:#1e8449; transition:all .3s; }
+
+  .toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 20px; background:var(--white); border-bottom:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+  .btn { display:inline-flex; align-items:center; gap:5px; padding:7px 13px; border-radius:8px; border:1.5px solid var(--border); font-size:0.79rem; font-weight:600; cursor:pointer; background:var(--white); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; transition:all .15s; }
+  .btn:hover { background:var(--bg); border-color:var(--primary-light); color:var(--primary); }
+  .btn-primary { background:var(--primary); color:white; border-color:var(--primary); }
+  .btn-primary:hover { background:var(--primary-light); border-color:var(--primary-light); color:white; }
+  .btn-accent { background:#e67e22; color:white; border-color:#e67e22; }
+  .btn-accent:hover { background:#ca6f1e; border-color:#ca6f1e; color:white; }
+  .btn-danger { background:#fdedec; color:var(--absent); border-color:#f1948a; }
+  .btn-danger:hover { background:#f1948a; }
+  .counter-badge { font-size:0.74rem; font-weight:700; color:var(--primary); background:#eaf2fb; border:1.5px solid #aed6f1; padding:4px 12px; border-radius:20px; }
+  input[type="text"],input[type="date"] { padding:7px 11px; border:1.5px solid var(--border); border-radius:8px; font-size:0.79rem; background:var(--white); color:var(--text); outline:none; font-family:'Segoe UI',Arial,sans-serif; }
+  input:focus { border-color:var(--primary-light); }
+
+  .stats-panel { display:flex; flex-wrap:wrap; gap:10px; padding:11px 20px; background:var(--white); border-bottom:1px solid var(--border); }
+  .stat-card { display:flex; align-items:center; gap:10px; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:8px 15px; min-width:138px; }
+  .stat-icon { font-size:21px; }
+  .stat-label { font-size:0.67rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat-value { font-size:1.35rem; font-weight:800; line-height:1.1; }
+
+  .legend { display:flex; flex-wrap:wrap; gap:14px; padding:7px 20px; background:var(--bg); border-bottom:1px solid var(--border); font-size:0.71rem; align-items:center; }
+  .legend-group { display:flex; align-items:center; gap:6px; }
+  .legend-lbl { font-weight:700; color:var(--text-muted); font-size:0.67rem; text-transform:uppercase; letter-spacing:.4px; }
+  .chip { display:inline-flex; align-items:center; gap:3px; padding:2px 9px; border-radius:20px; font-weight:700; font-size:0.68rem; border:1.5px solid transparent; }
+
+  .table-wrap { overflow:auto; max-height:calc(100vh - 340px); }
+  table { border-collapse:collapse; width:max-content; min-width:100%; font-size:0.79rem; }
+
+  thead tr.cat-row th { position:sticky; top:0; z-index:10; padding:7px 8px; font-size:0.68rem; font-weight:700; text-align:center; text-transform:uppercase; letter-spacing:.4px; border:1px solid rgba(255,255,255,0.2); white-space:nowrap; }
+  thead tr.col-row th { position:sticky; top:34px; z-index:10; padding:5px 7px; font-size:0.71rem; font-weight:700; text-align:center; border:1px solid var(--border); background:#eff2f7; color:var(--text-muted); white-space:nowrap; }
+
+  .th-num { position:sticky!important; left:0; z-index:20!important; min-width:38px; background:var(--primary)!important; }
+  .th-ape { position:sticky!important; left:38px; z-index:20!important; min-width:190px; background:var(--primary)!important; text-align:left!important; padding-left:12px!important; }
+  .th-nom { position:sticky!important; left:228px; z-index:20!important; min-width:150px; background:var(--primary)!important; text-align:left!important; padding-left:12px!important; }
+
+  .cat-asist { background:#1a6e3c; color:white; }
+  .cat-uni   { background:#154360; color:white; }
+  .cat-llam  { background:#784212; color:white; }
+  .cat-cel   { background:#4a235a; color:white; }
+  .cat-fixed { background:var(--primary); color:white; }
+  .col-asist { background:#f0faf4; }
+  .col-uni   { background:#eaf2fb; }
+  .col-llam  { background:#fef9e7; }
+  .col-cel   { background:#f5eef8; }
+  .col-sum   { background:#f0f3f7; }
+
+  tbody tr:nth-child(even) td { filter:brightness(0.975); }
+  tbody tr:hover td { background:var(--row-hover)!important; }
+  tbody td { border:1px solid var(--border); height:40px; padding:0; vertical-align:middle; background:var(--white); }
+  .td-num { text-align:center; color:var(--text-muted); font-size:0.71rem; padding:0 4px; }
+  .td-ape { padding:0 12px; font-weight:700; white-space:nowrap; }
+  .td-nom { padding:0 12px; color:var(--text-muted); white-space:nowrap; font-size:0.77rem; }
+  .td-sticky-num { position:sticky; left:0; z-index:4; background:var(--white)!important; }
+  .td-sticky-ape { position:sticky; left:38px; z-index:4; background:var(--white)!important; }
+  .td-sticky-nom { position:sticky; left:228px; z-index:4; background:var(--white)!important; }
+
+  /* Attendance circle */
+  .circle-wrap { display:flex; align-items:center; justify-content:center; width:100%; height:40px; }
+  .circle-btn { background:transparent; border:none; cursor:pointer; transition:transform .1s; display:flex; align-items:center; justify-content:center; }
+  .circle-btn:hover { transform:scale(1.18); }
+  .circle { width:30px; height:30px; border-radius:50%; border:2.5px solid var(--empty); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; background:white; color:var(--empty); transition:all .15s; }
+  .circle.present { background:var(--present-bg); border-color:var(--present); color:var(--present); }
+  .circle.absent  { background:var(--absent-bg);  border-color:var(--absent);  color:var(--absent); }
+  .circle.late    { background:var(--late-bg);    border-color:var(--late);    color:var(--late); }
+  .circle.excuse  { background:var(--excuse-bg);  border-color:var(--excuse);  color:var(--excuse); }
+
+  /* Dropdowns */
+  .cell-sel { width:100%; height:40px; border:none; background:transparent; font-size:0.73rem; font-weight:700; font-family:'Segoe UI',Arial,sans-serif; cursor:pointer; outline:none; text-align:center; padding:0 3px; appearance:none; -webkit-appearance:none; }
+  .s-uni-ok   { background:var(--present-bg)!important; color:var(--uni-ok)!important; }
+  .s-uni-mal  { background:var(--absent-bg)!important;  color:var(--uni-mal)!important; }
+  .s-cel-ok   { background:var(--present-bg)!important; color:var(--present)!important; }
+  .s-cel-no   { background:var(--absent-bg)!important;  color:var(--absent)!important; }
+  .s-cel-conf { background:#f5eef8!important;           color:var(--cel-conf)!important; }
+  .s-llam1    { background:#fef9e7!important; color:var(--llam1)!important; }
+  .s-llam2    { background:#fef0e0!important; color:var(--llam2)!important; }
+  .s-llam3    { background:var(--absent-bg)!important; color:var(--llam3)!important; }
+  .s-empty    { background:transparent!important; color:var(--text-muted)!important; }
+
+  .sum-cell { text-align:center; padding:0 7px; font-size:0.73rem; font-weight:700; white-space:nowrap; }
+
+  /* Date col header */
+  .date-hdr { display:flex; flex-direction:column; align-items:center; gap:1px; cursor:pointer; padding:2px 5px; border-radius:5px; }
+  .date-hdr:hover { background:rgba(0,0,0,0.07); }
+  .date-hdr .date-main { font-size:0.77rem; font-weight:700; }
+  .date-hdr .date-lbl  { font-size:0.59rem; opacity:.65; }
+  .date-hdr .date-edit { font-size:0.58rem; opacity:.5; }
+  .add-day-btn { background:rgba(255,255,255,0.14); border:1.5px dashed rgba(255,255,255,0.4); color:rgba(255,255,255,0.85); border-radius:7px; padding:3px 10px; font-size:0.67rem; cursor:pointer; font-weight:700; margin-left:8px; font-family:'Segoe UI',Arial,sans-serif; transition:all .15s; }
+  .add-day-btn:hover { background:rgba(255,255,255,0.26); color:white; }
+
+  /* Popup */
+  .popup-overlay { display:none; position:fixed; inset:0; z-index:500; }
+  .popup-overlay.open { display:block; }
+  .popup-menu { position:fixed; background:var(--white); border:1.5px solid var(--border); border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.16); min-width:185px; z-index:600; overflow:hidden; animation:popIn .12s ease; }
+  @keyframes popIn { from{transform:scale(.94);opacity:0} to{transform:scale(1);opacity:1} }
+  .popup-title { padding:8px 14px 6px; font-size:0.67rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
+  .popup-item { display:flex; align-items:center; gap:9px; padding:9px 14px; cursor:pointer; font-size:0.82rem; font-weight:600; border:none; background:transparent; width:100%; text-align:left; font-family:'Segoe UI',Arial,sans-serif; color:var(--text); transition:background .1s; }
+  .popup-item:hover { background:var(--bg); }
+  .popup-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .popup-item.active { background:#eaf2fb; }
+  .popup-item.active::after { content:'✓'; margin-left:auto; color:var(--present); font-size:.85rem; }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.38); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--white); border-radius:14px; padding:26px; width:380px; max-width:94vw; box-shadow:0 12px 40px rgba(0,0,0,0.18); animation:popIn .18s ease; }
+  .modal h2 { font-size:1rem; margin-bottom:18px; color:var(--primary); }
+  .form-group { margin-bottom:13px; }
+  .form-group label { display:block; font-size:0.71rem; font-weight:700; color:var(--text-muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
+  .form-group input { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:0.87rem; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+
+  .toast { position:fixed; bottom:22px; right:22px; background:var(--primary); color:white; padding:10px 18px; border-radius:9px; font-size:0.79rem; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.2); z-index:2000; opacity:0; transform:translateY(10px); transition:all .2s; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+
+/* ===================== MODO APP MÓVIL ===================== */
+html, body{
+  width:100%;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  padding-bottom:72px;
+}
+.tab-bar, .table-wrap{
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+@media (max-width: 1024px){
+  .header-top{
+    padding:12px 16px;
+  }
+  .toolbar, .stats-panel, .legend, #syncBar{
+    padding-left:14px;
+    padding-right:14px;
+  }
+}
+@media (max-width: 768px){
+  body{
+    background:#eef3f8;
+  }
+  header{
+    position:sticky;
+    top:0;
+    z-index:40;
+  }
+  .header-top{
+    padding:10px 12px;
+    gap:10px;
+  }
+  .header-top h1{
+    font-size:0.98rem;
+    line-height:1.2;
+  }
+  .header-top .sub{
+    font-size:0.67rem;
+  }
+  #syncBar{
+    font-size:0.7rem;
+    padding:6px 10px;
+  }
+  .tab-bar{
+    padding:0 8px;
+  }
+  .tab-btn{
+    font-size:0.72rem;
+    padding:10px 12px;
+    border-bottom-width:2px;
+  }
+  .toolbar{
+    position:sticky;
+    top:92px;
+    z-index:30;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:10px;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(8px);
+  }
+  .toolbar .btn,
+  .toolbar .counter-badge{
+    width:100%;
+    min-height:42px;
+    justify-content:center;
+    border-radius:12px;
+    font-size:0.76rem;
+  }
+  .toolbar > div[style*="width:1px"]{
+    display:none !important;
+  }
+  .toolbar input[type="text"],
+  .toolbar input[type="date"],
+  .toolbar select{
+    width:100%;
+    min-height:42px;
+    border-radius:12px;
+    font-size:0.78rem;
+  }
+  .toolbar > span:last-child{
+    grid-column:1 / -1;
+    margin-left:0 !important;
+    width:100%;
+  }
+  .stats-panel{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:10px;
+  }
+  .stat-card{
+    min-width:0 !important;
+    width:100%;
+    border-radius:14px;
+    padding:12px 10px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.06);
+  }
+  .stat-card .num{
+    font-size:1.05rem;
+  }
+  .legend{
+    padding:10px;
+    gap:8px;
+  }
+  .legend-group{
+    width:100%;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .chip{
+    border-radius:999px;
+    font-size:0.66rem;
+    padding:5px 8px;
+  }
+  .table-wrap{
+    margin:0 8px 12px;
+    border-radius:16px;
+    overflow:auto;
+    border:1px solid #d6dee8;
+    box-shadow:0 4px 14px rgba(0,0,0,0.06);
+    background:#fff;
+  }
+  table{
+    min-width:980px;
+    font-size:0.72rem;
+  }
+  thead tr.cat-row th{
+    font-size:0.62rem;
+    padding:7px 4px;
+  }
+  thead tr.col-row th{
+    font-size:0.64rem;
+    padding:6px 4px;
+  }
+  .th-num{
+    min-width:36px;
+    width:36px;
+  }
+  .th-ape{
+    min-width:138px;
+  }
+  .th-nom{
+    min-width:118px;
+  }
+  .td-ape, .td-nom{
+    padding:0 8px;
+    font-size:0.72rem;
+  }
+  .circle{
+    width:28px;
+    height:28px;
+    font-size:12px;
+  }
+  .cell-sel{
+    font-size:0.68rem;
+    padding:4px 6px;
+    border-radius:10px;
+  }
+  .obs-input{
+    min-width:115px;
+    width:115px;
+    font-size:0.72rem;
+    border-radius:10px;
+  }
+  .modal-backdrop{
+    padding:12px;
+  }
+  .modal{
+    width:100%;
+    max-width:100%;
+    border-radius:18px;
+    padding:18px 16px;
+  }
+  .modal h3{
+    font-size:1rem;
+  }
+  .modal-actions{
+    flex-direction:column;
+    gap:8px;
+  }
+  .modal-actions .btn{
+    width:100%;
+    justify-content:center;
+  }
+  .toast{
+    left:10px;
+    right:10px;
+    bottom:12px;
+    max-width:none;
+    border-radius:14px;
+  }
+}
+@media (max-width: 480px){
+  body{
+    padding-bottom:84px;
+  }
+  .toolbar{
+    grid-template-columns:1fr;
+    top:88px;
+  }
+  .stats-panel{
+    grid-template-columns:1fr;
+  }
+  .header-top{
+    padding:10px;
+  }
+  .header-top h1{
+    font-size:0.92rem;
+  }
+  .tab-btn{
+    padding:9px 10px;
+  }
+  .table-wrap{
+    margin:0 6px 10px;
+    border-radius:14px;
+  }
+  .th-ape{
+    min-width:126px;
+  }
+  .th-nom{
+    min-width:108px;
+  }
+  .circle{
+    width:26px;
+    height:26px;
+  }
+  .obs-input{
+    min-width:100px;
+    width:100px;
+  }
+}
+
+
+/* ===================== AJUSTE MÓVIL TABLA ===================== */
+@media (max-width: 768px){
+  /* En móvil quitamos columnas pegajosas para evitar superposición */
+  .th-num, .th-ape, .th-nom,
+  .td-sticky-num, .td-sticky-ape, .td-sticky-nom{
+    position: static !important;
+    left: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
+
+  thead tr.cat-row th,
+  thead tr.col-row th{
+    position: static !important;
+    top: auto !important;
+  }
+
+  .table-wrap{
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+  }
+
+  table{
+    min-width: 980px !important;
+    width: max-content !important;
+  }
+
+  .th-num{ min-width: 42px !important; width: 42px !important; }
+  .th-ape{ min-width: 150px !important; }
+  .th-nom{ min-width: 130px !important; }
+
+  .td-num{ min-width: 42px !important; }
+  .td-ape{ min-width: 150px !important; }
+  .td-nom{ min-width: 130px !important; }
+
+  .toolbar{
+    position: static !important;
+  }
+}
+
+@media (max-width: 480px){
+  table{
+    min-width: 920px !important;
+  }
+
+  .th-ape, .td-ape{ min-width: 138px !important; }
+  .th-nom, .td-nom{ min-width: 118px !important; }
+}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <span style="font-size:24px">📋</span>
+    <div>
+      <h1>Asistencia & Convivencia 2026</h1>
+      <div class="sub">Registro por clase · Asistencia · Uniforme · Llamados · Celular</div>
+    </div>
+  </div>
+  <div class="tab-bar" id="tabBar"></div>
+</header>
+
+<div id="syncBar"><span id="syncIcon">☁️</span><span id="syncMsg">Conectado a Google Sheets</span><span id="syncSpinner" style="display:none">⏳</span></div>
+
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="openAddDayModal()">📅 Agregar clase</button>
+  <button class="btn btn-accent" onclick="addToday()">⚡ Agregar hoy</button>
+  <button class="btn" onclick="addStudent()">👤 Añadir estudiante</button>
+  <span id="claseCounter" class="counter-badge">📅 0 clases</span>
+  <div style="width:1px;height:22px;background:var(--border);margin:0 2px"></div>
+  <button class="btn" onclick="exportCSV()">⬇ Exportar CSV</button>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <input type="text" id="searchInput" placeholder="🔍 Buscar estudiante..." style="width:200px" oninput="renderBody()">
+  </span>
+</div>
+
+<div class="stats-panel">
+  <div class="stat-card"><span class="stat-icon">✅</span><div><div class="stat-label">Asistentes</div><div class="stat-value" id="sAsist" style="color:var(--present)">—</div></div></div>
+  <div class="stat-card"><span class="stat-icon">⏰</span><div><div class="stat-label">Llegadas tarde</div><div class="stat-value" id="sTarde" style="color:var(--late)">—</div></div></div>
+  <div class="stat-card"><span class="stat-icon">❌</span><div><div class="stat-label">Inasistencias</div><div class="stat-value" id="sNoAsist" style="color:var(--absent)">—</div></div></div>
+  <div class="stat-card"><span class="stat-icon">👔</span><div><div class="stat-label">Uniforme incorrecto</div><div class="stat-value" id="sUniMal" style="color:var(--absent)">—</div></div></div>
+  <div class="stat-card"><span class="stat-icon">⚠️</span><div><div class="stat-label">Llamados</div><div class="stat-value" id="sLlam" style="color:var(--llam2)">—</div></div></div>
+  <div class="stat-card"><span class="stat-icon">📱</span><div><div class="stat-label">Incidentes celular</div><div class="stat-value" id="sCel" style="color:var(--cel-conf)">—</div></div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-group"><span class="legend-lbl">Asistencia:</span>
+    <span class="chip" style="background:var(--present-bg);color:var(--present);border-color:#a9dfbf">✓ Asistente</span>
+    <span class="chip" style="background:var(--late-bg);color:var(--late);border-color:#fad7a0">⏰ Tarde</span>
+    <span class="chip" style="background:var(--excuse-bg);color:var(--excuse);border-color:#85c1e9">📝 Excusa</span>
+    <span class="chip" style="background:var(--absent-bg);color:var(--absent);border-color:#f1948a">✗ No asiste</span>
+  </div>
+  <div class="legend-group"><span class="legend-lbl">Uniforme:</span>
+    <span class="chip" style="background:var(--present-bg);color:var(--present);border-color:#a9dfbf">✓ Correcto</span>
+    <span class="chip" style="background:var(--absent-bg);color:var(--absent);border-color:#f1948a">✗ Inadecuado</span>
+  </div>
+  <div class="legend-group"><span class="legend-lbl">Llamados:</span>
+    <span class="chip" style="background:#fef9e7;color:var(--llam1);border-color:#f9e79f">① 1°</span>
+    <span class="chip" style="background:#fef0e0;color:var(--llam2);border-color:#fad7a0">② 2°</span>
+    <span class="chip" style="background:var(--absent-bg);color:var(--absent);border-color:#f1948a">③ 3°</span>
+  </div>
+  <div class="legend-group"><span class="legend-lbl">Celular:</span>
+    <span class="chip" style="background:var(--present-bg);color:var(--present);border-color:#a9dfbf">Permitido</span>
+    <span class="chip" style="background:var(--absent-bg);color:var(--absent);border-color:#f1948a">No permitido</span>
+    <span class="chip" style="background:#f5eef8;color:var(--cel-conf);border-color:#d2b4de">Confiscado</span>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+</div>
+
+<!-- Popup asistencia -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+<div class="popup-menu" id="popupMenu" style="display:none">
+  <div class="popup-title" id="popupTitle">Asistencia</div>
+  <button class="popup-item" id="pOpt0" onclick="setAttendance('')"><div class="popup-dot" style="background:var(--empty)"></div>Sin marcar</button>
+  <button class="popup-item" id="pOpt1" onclick="setAttendance('present')"><div class="popup-dot" style="background:var(--present)"></div>✓ Asistente</button>
+  <button class="popup-item" id="pOpt2" onclick="setAttendance('absent')"><div class="popup-dot" style="background:var(--absent)"></div>✗ No asiste</button>
+  <button class="popup-item" id="pOpt3" onclick="setAttendance('late')"><div class="popup-dot" style="background:var(--late)"></div>⏰ Tarde</button>
+  <button class="popup-item" id="pOpt4" onclick="setAttendance('excuse')"><div class="popup-dot" style="background:var(--excuse)"></div>📝 Excusa</button>
+</div>
+
+<!-- Modal agregar clase -->
+<div class="modal-overlay" id="addDayModal">
+  <div class="modal">
+    <h2>📅 Agregar clase</h2>
+    <div class="form-group"><label>Fecha de la clase</label><input type="date" id="newDayDate"></div>
+    <div class="form-group"><label>Etiqueta (opcional)</label><input type="text" id="newDayLabel" placeholder="Ej: Semana 3, Recuperación..."></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addDayModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addDay()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar clase -->
+<div class="modal-overlay" id="editDayModal">
+  <div class="modal">
+    <h2>✏️ Editar clase</h2>
+    <div class="form-group"><label>Fecha</label><input type="date" id="editDayDate"></div>
+    <div class="form-group"><label>Etiqueta</label><input type="text" id="editDayLabel" placeholder="Opcional"></div>
+    <input type="hidden" id="editDayId">
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="deleteDay()">Eliminar</button>
+      <button class="btn" onclick="closeModal('editDayModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEditDay()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEETS={"702 - ING":[{"apellidos":"ANRANGO MALDONADO","nombres":"YAID JOSUE"},{"apellidos":"BELEÑO RIVEROS","nombres":"LEDYS VALENTINA"},{"apellidos":"CASTILLO DUQUE","nombres":"DIEGO ALEJANDRO"},{"apellidos":"DIAZ TOVAR","nombres":"NATHALY SOFIA"},{"apellidos":"GARCIA BELEÑO","nombres":"JUAN SEBASTIAN"},{"apellidos":"GARCIA PEREZ","nombres":"JONATHAN DELIMIRO"},{"apellidos":"GONZALEZ COHEN","nombres":"YORKIS EDUARDO"},{"apellidos":"GUEVARA AVILES","nombres":"NICOLAS ALEJANDRO"},{"apellidos":"GUTIERREZ MONTENEGRO","nombres":"NEIMAR JOSE"},{"apellidos":"HENAO CUERVO","nombres":"ANA SOFIA"},{"apellidos":"HERRERA CABALLERO","nombres":"EMANUEL"},{"apellidos":"LOZANO PERALTA","nombres":"SIMON DAVID"},{"apellidos":"MENA CUESTA","nombres":"EMELY VALENTINA"},{"apellidos":"MENDOZA BERNAL","nombres":"SAMUEL"},{"apellidos":"MORALES CASALLAS","nombres":"EMMANUEL ANGEL"},{"apellidos":"MORENO REYES","nombres":"KIMBERLY NICOL"},{"apellidos":"MUÑOZ PULGARIN","nombres":"ANA MARIA"},{"apellidos":"NEUTA OSORIO","nombres":"MARIA ISABELLA"},{"apellidos":"OJEDA MEDINA","nombres":"SARA VALENTINA"},{"apellidos":"ORTEGON SEGURA","nombres":"SEBASTIAN DAVID"},{"apellidos":"PARRA BUITRAGO","nombres":"DANNA SOFIA"},{"apellidos":"PEREZ PEREZ","nombres":"MARTIN"},{"apellidos":"RODRIGUEZ TERAN","nombres":"LIZETH CAROLINA"},{"apellidos":"ROMERO ESCALANTE","nombres":"XAMDER DAVID"},{"apellidos":"RUIZ FLOREZ","nombres":"EDUARD MATIAS"},{"apellidos":"RUIZ RESTREPO","nombres":"JULIETA"},{"apellidos":"TIMAURE MELENDEZ","nombres":"SEBASTIAN ALEXANDER"},{"apellidos":"TORREBLANCA TOBIAS","nombres":"GREYDIS LORENA"},{"apellidos":"TORRES GARZON","nombres":"VALERY SOFIA"},{"apellidos":"VILLALBA MARTINEZ","nombres":"DIEGO"},{"apellidos":"VILLAMIL LEAL","nombres":"JAVID MATIAS"}],"801 - ING":[{"apellidos":"ACERO FALLA","nombres":"ISABELA"},{"apellidos":"ACUÑA VERDUGO","nombres":"NICOLLE DANIELA"},{"apellidos":"BAUTISTA LOPEZ","nombres":"JUAN ESTEBAN"},{"apellidos":"BECERRA MERCHAN","nombres":"MATTIAS"},{"apellidos":"BELTRAN VARGAS","nombres":"PAULA VALENTINA"},{"apellidos":"BELTRAN VILLALBA","nombres":"SAMUEL ENRIQUE"},{"apellidos":"CARO GARCÍA","nombres":"LUCÍA"},{"apellidos":"CASTAÑO LOPEZ","nombres":"JUAN CAMILO"},{"apellidos":"CASTRO SANGUINO","nombres":"ASHLY DAYANA"},{"apellidos":"CORREA FONSECA","nombres":"DIEGO ANDRES"},{"apellidos":"DAVILA MARTINEZ","nombres":"JOAN EMMANUEL"},{"apellidos":"DE FRENZA PEINADO","nombres":"NATHALIA ANTONELLA"},{"apellidos":"DUGARTE UZCATEGUI","nombres":"FABIAN ANDRES"},{"apellidos":"FRESNEDA HERRERA","nombres":"LAURA XIMENA"},{"apellidos":"GALINDO BARON","nombres":"CARLA MARIANA"},{"apellidos":"GALVIS GUTIERREZ","nombres":"DAVID SANTIAGO"},{"apellidos":"GARCIA SANCHEZ","nombres":"DANA SOFIA"},{"apellidos":"GIRALDO MURCIA","nombres":"CARLA GISEL"},{"apellidos":"GONZALEZ GUERRERO","nombres":"ISABELA"},{"apellidos":"GONZALEZ LOPEZ","nombres":"YULI XIMENA"},{"apellidos":"JIMENES LAGUADO","nombres":"MARÍA JOSÉ"},{"apellidos":"LLANOS HUERTAS","nombres":"SARA ISABELLA"},{"apellidos":"MARINEZ MAYORGA","nombres":"VALERY DAYAN"},{"apellidos":"MENDIETA MEJIA","nombres":"JUAN ANGEL"},{"apellidos":"MORENO LARA","nombres":"NICOLAS"},{"apellidos":"MORENO SILVA","nombres":"LAURA MICHELLE"},{"apellidos":"OJEDA HERRERA","nombres":"MAURA ALEJANDRA"},{"apellidos":"PARRA VILLADA","nombres":"SARITHA"},{"apellidos":"PINEDA OCHOA","nombres":"NICOLAS ADAN"},{"apellidos":"REVERON RIVEROS","nombres":"CAMILA VALERIA"},{"apellidos":"RIASCOS CAICEDO","nombres":"CESAR ADRIAN"},{"apellidos":"RODRIGUEZ MANRIQUE","nombres":"DAVID ESTEBAN"},{"apellidos":"SANCHEZ FERNANDEZ","nombres":"MIGUEL ANGEL"},{"apellidos":"TRIVIÑO GUALTEROS","nombres":"JULIAN DAVID"}],"802 - ING":[{"apellidos":"ACOSTA AGUIAR","nombres":"MIGUEL EDUARDO"},{"apellidos":"ARIAS LEON","nombres":"JONATHAN GABRIEL"},{"apellidos":"ARRIETA VERGARA","nombres":"ANNY SOFIA"},{"apellidos":"BELEÑO BETANCOURTH","nombres":"ARIADNA ALEJANDRA"},{"apellidos":"BUITRAGO ANGEL","nombres":"MARIA JOSE"},{"apellidos":"CABEZAS MARTINEZ","nombres":"SOLL MARIX"},{"apellidos":"CARRASCAL DE LA TORRE","nombres":"JADER STIVEN"},{"apellidos":"CASTRO LASTRA","nombres":"AURA SOFIA"},{"apellidos":"COLORADO OLMOS","nombres":"NICOLE VALERIA"},{"apellidos":"CORTES RINCON","nombres":"OSWEILYN ESTHER"},{"apellidos":"CORTES ROCHA","nombres":"JUAN FELIPE"},{"apellidos":"FERNANDEZ BUENDIA","nombres":"SEBASTIAN JOSE"},{"apellidos":"FORERO CARRERO","nombres":"DANNA VALENTINA"},{"apellidos":"GARCIA AVELLANEDA","nombres":"SAMUEL JOSE"},{"apellidos":"GARCIA MORANTES","nombres":"LUIS SEBASTIAN"},{"apellidos":"HEREDIA RUIZ","nombres":"MARIA CAMILA"},{"apellidos":"HERNANDEZ PEREZ","nombres":"CAMILA YIREH"},{"apellidos":"LAVERDE ALONSO","nombres":"JOEL"},{"apellidos":"MENDEZ CALDERON","nombres":"SAMUEL"},{"apellidos":"MORENO BECERRA","nombres":"IVAN DARIO"},{"apellidos":"MUÑOZ MONTES","nombres":"ISABELLA"},{"apellidos":"MURIEL GAMEZ","nombres":"JORDAN DAVID"},{"apellidos":"NAVARRETE NIÑO","nombres":"NICOL TATIANA"},{"apellidos":"OLAYA PEREZ","nombres":"MELANY GABRIELA"},{"apellidos":"ORDONEZ CIFUENTES","nombres":"JUAN ANGEL"},{"apellidos":"ORTEGA CHAVARRA","nombres":"SOFIA"},{"apellidos":"PEDRAZA GONZALEZ","nombres":"JUAN JOSE"},{"apellidos":"PRIETO POVEDA","nombres":"DAVID FELIPE"},{"apellidos":"PUERTO ORTIZ","nombres":"GABRIELA"},{"apellidos":"PULIDO FLOREZ","nombres":"MARIA ISABELLA"},{"apellidos":"REBOLLEDO BUSTAMANTE","nombres":"ISABELLA SOFIA"},{"apellidos":"ROA ORMAZA","nombres":"SAMUEL HUMBERTO"},{"apellidos":"ROJAS RICAURTE","nombres":"DIEGO ISAAC"},{"apellidos":"ZAMBRANO PORTELA","nombres":"ANAMARIA"}],"703 - CAS":[{"apellidos":"ALVARADO NOVOA","nombres":"KRISTEN VALERIA"},{"apellidos":"BERMUDEZ LARA","nombres":"LUIS ALBERTO"},{"apellidos":"BONILLA REYES","nombres":"NATALIA"},{"apellidos":"CARDOZO OLARTE","nombres":"ANDRES FELIPE"},{"apellidos":"CERQUERA PRIETO","nombres":"EDWARD SAMUEL"},{"apellidos":"DE FRENZA PEINADO","nombres":"FRANCO ALESSANDRO"},{"apellidos":"DE LA HOZ HERNANDEZ","nombres":"NICOLLE DAYANA"},{"apellidos":"DUEÑAS GIL","nombres":"MARTIN"},{"apellidos":"DURAN VALENCIA","nombres":"LAUREN VALENTINA"},{"apellidos":"ESPEJO DIAZ","nombres":"ANDERSON ESNEIDER"},{"apellidos":"ESTRADA RINCON","nombres":"ISABELLA CRISTINA"},{"apellidos":"GOMEZ SUAREZ","nombres":"JOHAN SAMUEL"},{"apellidos":"GUZMAN ALFONSO","nombres":"ANGEL ALBERTO"},{"apellidos":"HERNANDEZ ALVAREZ","nombres":"MIGUEL ANGEL"},{"apellidos":"MARTINEZ CASTRO","nombres":"AINHOA MIRANDA"},{"apellidos":"MEDINA TURMEQUE","nombres":"ANGEL SOFIA"},{"apellidos":"MENDEZ FARFAN","nombres":"JUAN FELIPE"},{"apellidos":"NAVAS DIAZ","nombres":"SALOME"},{"apellidos":"PARRA LEAL","nombres":"GISSELLE GABRIELA"},{"apellidos":"PEREZ PINEDA","nombres":"NICOLAS"},{"apellidos":"PINILLA ALZATE","nombres":"ANGEL SANTIAGO"},{"apellidos":"PULIDO FLOREZ","nombres":"MARIANA"},{"apellidos":"RAMIREZ RODRIGUEZ","nombres":"CAMILA SARAHI"},{"apellidos":"REBOLLEDO BUSTAMANTE","nombres":"ISAAC JOSE"},{"apellidos":"RESTREPO CARDENAS","nombres":"FABIAN ESTEBAN"},{"apellidos":"RODRIGUEZ YARA","nombres":"MARIA JOSE"},{"apellidos":"SANCHEZ HERNANDEZ","nombres":"HELEN ISABELLA"},{"apellidos":"SUAREZ TIQUE","nombres":"MICHAEL STEVEN"},{"apellidos":"TIMAURE MELENDEZ","nombres":"SEBASTIAN ALEXANDER"},{"apellidos":"TORO GALLO","nombres":"SAMUEL FELIPE"},{"apellidos":"VINASCO ANACONA","nombres":"SARAY YULIANA"},{"apellidos":"VINASCO ANACONA","nombres":"LIYEN BRISNEY"}],"803 - CAS":[{"apellidos":"AMADO FRESNEDA","nombres":"SERGIO NICOLAS"},{"apellidos":"APARICIO CHICACAUSA","nombres":"EIMY"},{"apellidos":"BANGURA DUNDUMI","nombres":"NICOL DAHIANA"},{"apellidos":"BETANCOURT RODRIGUEZ","nombres":"ZARETH SOFIA"},{"apellidos":"BUITRAGO LOPEZ","nombres":"ESTEBAN"},{"apellidos":"CEBALLOS RENGIFO","nombres":"TAYRONA"},{"apellidos":"CORTES TARAZONA","nombres":"JOSE DAVID"},{"apellidos":"ESQUIVEL PUENTES","nombres":"LIANNE ANTONIA"},{"apellidos":"FERNANDEZ RAMIREZ","nombres":"ANDRES MAURICIO"},{"apellidos":"GONZALEZ GUERRERO","nombres":"ISABELLA"},{"apellidos":"GONZALEZ LOPEZ","nombres":"SARA"},{"apellidos":"GUERRERO MUÑOZ","nombres":"MARIA ESTEFANIA"},{"apellidos":"GUTIERREZ BLANCO","nombres":"LUCIANA CAMILA"},{"apellidos":"HERNANDEZ MURCIA","nombres":"VALERIE SOFIA"},{"apellidos":"HERRERA PEÑUELA","nombres":"EVELING SOFIA"},{"apellidos":"LESMES ROMERO","nombres":"JUAN CAMILO"},{"apellidos":"LOPEZ GOMEZ","nombres":"ANDRUW JHOSUA"},{"apellidos":"LOZANO MEDINA","nombres":"JUAN ESTEBAN"},{"apellidos":"MARQUEZ OVIEDO","nombres":"SAMUEL ANDRES"},{"apellidos":"MENDEZ ARIZA","nombres":"ARTURO ENRIQUE"},{"apellidos":"MONTEALEGRE CALVO","nombres":"SAMUEL ALBERTO"},{"apellidos":"MORENO ARIZA","nombres":"DANIEL ESTEBAN"},{"apellidos":"MORENO BENAVIDES","nombres":"CRISTIAN FELIPE"},{"apellidos":"MUÑOZ TORRES","nombres":"DANIEL FELIPE"},{"apellidos":"NUMPAQUE SOTELO","nombres":"ISABELLA"},{"apellidos":"PINEDO SERPA","nombres":"LINA MARCELA"},{"apellidos":"PINILLA MOLINA","nombres":"JUDY ALEXANDRA"},{"apellidos":"PLAZA IBAÑEZ","nombres":"MARTIN ALEJANDRO"},{"apellidos":"PULIDO GOMEZ","nombres":"DANIELA"},{"apellidos":"REALES CERDA","nombres":"DAYIMAR DANIELA"},{"apellidos":"RIOS GALINDO","nombres":"ANIBAL EMMANUEL"},{"apellidos":"RODRIGUEZ CASTRO","nombres":"ANYELY FERNANDA"},{"apellidos":"RODRIGUEZ HERRERA","nombres":"JULIANA"},{"apellidos":"RODRIGUEZ TORRES","nombres":"DAVID ESTIVEN"},{"apellidos":"ROMERO ALVAREZ","nombres":"ANDERSSON"},{"apellidos":"ROMERO IBARRA","nombres":"SAMUEL SALAH"},{"apellidos":"RONDANO TOVAR","nombres":"SALOME"},{"apellidos":"SANTAMARIA TORRES","nombres":"ANDRES SANTIAGO"},{"apellidos":"TRUJILLO CALDERON","nombres":"JUAN SEBASTIAN"}],"1003 - CAS":[{"apellidos":"ACOSTA PATERNINA","nombres":"ISABELLA"},{"apellidos":"BECERRA MAYO","nombres":"JERONIMO"},{"apellidos":"BONILLA GALINDA","nombres":"BRIAN ALEJANDRO"},{"apellidos":"CAMACHO OSPINA","nombres":"MICHAEL ALEXANDER"},{"apellidos":"CASTRO LADINO","nombres":"DAVID ROBERTO"},{"apellidos":"CHAUTA GUARIN","nombres":"JOEL SEBASTIAN"},{"apellidos":"COBOS GUEVARA","nombres":"MANUELA"},{"apellidos":"CORBA PULIDO","nombres":"MIGUEL ANGEL"},{"apellidos":"DUN VERGARA","nombres":"ORLEIBIS GEORGINA"},{"apellidos":"GARAY VILLALBA","nombres":"ANDRES FELIPE"},{"apellidos":"GARZON ORTIZ","nombres":"LEIDY DANIELA"},{"apellidos":"HERNANDEZ CADENA","nombres":"WILSON DANIEL"},{"apellidos":"LEON CASTRO","nombres":"JUAN CAMILO"},{"apellidos":"LONGA ROJAS","nombres":"MARIA JOSE"},{"apellidos":"LOPEZ RODRIGUEZ","nombres":"KAROL YINETH"},{"apellidos":"MAHECHA BELLO","nombres":"VALERY"},{"apellidos":"MALAGON RICO","nombres":"SOPHIA"},{"apellidos":"MARQUEZ VILLEGAS","nombres":"SNEYKER VLADIMIR"},{"apellidos":"MENDEZ MORENA","nombres":"HANNAH VALERIA"},{"apellidos":"MIRANDA VELOSA","nombres":"JUAN ESTEBAN"},{"apellidos":"MONTAÑO CASTRO","nombres":"ALEJANDRO"},{"apellidos":"MORENO BECERRA","nombres":"MARIA ALEJANDRA"},{"apellidos":"PICHAMBA CANDO","nombres":"JOSEP JOEL"},{"apellidos":"PINZON PALOMA","nombres":"LAURA JULIANA"},{"apellidos":"RIVERA RAMIREZ","nombres":"ANGEL DAVID"},{"apellidos":"ROSERO GUEVARA","nombres":"BRITTANY SOFIA"},{"apellidos":"SALAZAR OLAYA","nombres":"ISABELA"},{"apellidos":"SOACHA RINCON","nombres":"GABRIEL ALEJANDRO"},{"apellidos":"SOTO GUZMAN","nombres":"SHARON GABRIELA"},{"apellidos":"TIMAURE MELENDEZ","nombres":"AARON ALEXANDER"},{"apellidos":"TORRES CABRALES","nombres":"NICOLE SOFIA"},{"apellidos":"VARGAS AYURE","nombres":"JULIAN SANTIAGO"},{"apellidos":"VELASQUEZ PESTANA","nombres":"LUIS MANUEL"}]};
+
+const SHEETS_URL='https://script.google.com/macros/s/AKfycbwfdtpGBZoqLyqC3GDFQad2SGMjHnWOzQ6HMqgX5E0j5ogWi1GdpBFQexXOmlsZoqPKYg/exec';
+let currentSheet=Object.keys(SHEETS)[0],records={},syncTimer=null,popupIdx=null,popupDayId=null;
+const courseMeta={};
+Object.keys(SHEETS).forEach(s=>{records[s]={};courseMeta[s]={days:[],dayIdCounter:0};});
+Object.defineProperty(window,'days',{get(){return courseMeta[currentSheet].days;},set(v){courseMeta[currentSheet].days=Array.isArray(v)?v:[];}});
+Object.defineProperty(window,'dayIdCounter',{get(){return courseMeta[currentSheet].dayIdCounter||0;},set(v){courseMeta[currentSheet].dayIdCounter=Number(v)||0;}});
+
+function fmt(d){if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}`;}
+function fmtFull(d){if(!d)return'—';const[y,m,dd]=d.split('-');const ms=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${dd} ${ms[parseInt(m)-1]}`;}
+
+function renderTabs(){
+  document.getElementById('tabBar').innerHTML=Object.keys(SHEETS).map(n=>
+    `<button class="tab-btn ${n===currentSheet?'active':''}" onclick="switchTab('${n}')">${n}</button>`).join('');
+}
+function switchTab(n){currentSheet=n;renderTabs();renderTable();updateStats();}
+
+function renderTable(){renderHead();renderBody();updateCounter();}
+
+function renderHead(){
+  const n=days.length,ds=n||1;
+  let r1=`<th class="th-num cat-fixed" rowspan="2">#</th><th class="th-ape cat-fixed" rowspan="2">APELLIDOS</th><th class="th-nom cat-fixed" rowspan="2">NOMBRES</th>
+    <th class="cat-asist" colspan="${ds+1}">✅ ASISTENCIA <button class="add-day-btn" onclick="openAddDayModal()">+ Clase</button></th>
+    <th class="cat-uni" colspan="${ds+1}">👔 UNIFORME</th>
+    <th class="cat-llam" colspan="${ds+1}">⚠️ LLAMADOS</th>
+    <th class="cat-cel" colspan="${ds+1}">📱 CELULAR</th>
+    <th class="cat-obs" rowspan="2">📝 OBSERVACIÓN</th><th class="cat-fixed" rowspan="2">🗑️</th>`;
+  let r2='';
+  ['asist','uni','llam','cel'].forEach(cat=>{
+    if(n===0){r2+=`<th class="col-${cat}" style="min-width:72px;font-style:italic;color:var(--text-muted)">—</th>`;}
+    else days.forEach(day=>{
+      const lbl=day.label?`<div class="date-lbl">${day.label}</div>`:'';
+      r2+=`<th class="col-${cat}" style="min-width:74px"><div class="date-hdr" onclick="openEditDayModal(${day.id})"><div class="date-main">${fmt(day.date)}</div>${lbl}<div class="date-edit">✏️ editar</div></div></th>`;
+    });
+    r2+=`<th class="col-sum" style="min-width:70px;font-size:0.66rem">📊 Total</th>`;
+  });
+  document.getElementById('thead').innerHTML=`<tr class="cat-row">${r1}</tr><tr class="col-row">${r2}</tr>`;
+}
+
+function renderBody(){
+  const tbody=document.getElementById('tbody'),students=SHEETS[currentSheet];
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const list=students.map((s,i)=>({...s,idx:i})).filter(s=>!q||s.apellidos.toLowerCase().includes(q)||s.nombres.toLowerCase().includes(q));
+  tbody.innerHTML='';
+  list.forEach(s=>{
+    const tr=document.createElement('tr'),rec=records[currentSheet][s.idx]||{};
+    tr.innerHTML=`<td class="td-sticky-num td-num">${s.idx+1}</td><td class="td-sticky-ape td-ape">${s.apellidos}</td><td class="td-sticky-nom td-nom">${s.nombres}</td>`;
+    // ASISTENCIA
+    days.forEach(day=>{
+      const val=(rec[day.id]||{}).asist||'';
+      const td=document.createElement('td');td.className='col-asist';
+      const wrap=document.createElement('div');wrap.className='circle-wrap';
+      const btn=document.createElement('button');btn.className='circle-btn';
+      btn.onclick=(e)=>{e.stopPropagation();openPopup(s.idx,day.id,btn,val);};
+      const c=document.createElement('div');
+      c.className='circle '+(val==='present'?'present':val==='absent'?'absent':val==='late'?'late':val==='excuse'?'excuse':'');
+      c.textContent=val==='present'?'✓':val==='absent'?'✗':val==='late'?'⏰':val==='excuse'?'📝':'';
+      btn.appendChild(c);wrap.appendChild(btn);td.appendChild(wrap);tr.appendChild(td);
+    });
+    if(!days.length){const td=document.createElement('td');td.className='col-asist';tr.appendChild(td);}
+    // Asistencia summary
+    const av=days.map(d=>(rec[d.id]||{}).asist||'');
+    const atd=document.createElement('td');atd.className='col-sum sum-cell';
+    atd.innerHTML=`<span style="color:var(--present)">${av.filter(v=>v==='present').length}✓</span> <span style="color:var(--late)">${av.filter(v=>v==='late').length}⏰</span> <span style="color:var(--excuse)">${av.filter(v=>v==='excuse').length}📝</span> <span style="color:var(--absent)">${av.filter(v=>v==='absent').length}✗</span>`;
+    tr.appendChild(atd);
+    // UNIFORME
+    days.forEach(day=>{
+      const val=(rec[day.id]||{}).uni||'';
+      const td=document.createElement('td');td.className='col-uni';
+      td.appendChild(mkSel([{v:'',l:'—',c:'s-empty'},{v:'ok',l:'✓ Correcto',c:'s-uni-ok'},{v:'mal',l:'✗ Inadecuado',c:'s-uni-mal'}],val,nv=>setRec(s.idx,day.id,'uni',nv)));
+      tr.appendChild(td);
+    });
+    if(!days.length){const td=document.createElement('td');td.className='col-uni';tr.appendChild(td);}
+    const uv=days.map(d=>(rec[d.id]||{}).uni||'');
+    const utd=document.createElement('td');utd.className='col-sum sum-cell';
+    utd.innerHTML=`<span style="color:var(--present)">${uv.filter(v=>v==='ok').length}✓</span> <span style="color:var(--absent)">${uv.filter(v=>v==='mal').length}✗</span>`;
+    tr.appendChild(utd);
+    // LLAMADOS
+    days.forEach(day=>{
+      const val=(rec[day.id]||{}).llam||'';
+      const td=document.createElement('td');td.className='col-llam';
+      td.appendChild(mkSel([{v:'',l:'—',c:'s-empty'},{v:'1',l:'① 1° Llamado',c:'s-llam1'},{v:'2',l:'② 2° Llamado',c:'s-llam2'},{v:'3',l:'③ 3° Llamado',c:'s-llam3'}],val,nv=>setRec(s.idx,day.id,'llam',nv)));
+      tr.appendChild(td);
+    });
+    if(!days.length){const td=document.createElement('td');td.className='col-llam';tr.appendChild(td);}
+    const lv=days.map(d=>(rec[d.id]||{}).llam||'');
+    const ltotal=lv.filter(v=>v!=='').length,lmax=lv.length?Math.max(...lv.map(v=>parseInt(v)||0)):0;
+    const lcolor=lmax===3?'var(--llam3)':lmax===2?'var(--llam2)':lmax===1?'var(--llam1)':'var(--text-muted)';
+    const ltd=document.createElement('td');ltd.className='col-sum sum-cell';
+    ltd.innerHTML=`<span style="color:${lcolor}">${ltotal>0?ltotal+' llamado'+(ltotal!==1?'s':''):'—'}</span>`;
+    tr.appendChild(ltd);
+    // CELULAR
+    days.forEach(day=>{
+      const val=(rec[day.id]||{}).cel||'';
+      const td=document.createElement('td');td.className='col-cel';
+      td.appendChild(mkSel([{v:'',l:'—',c:'s-empty'},{v:'ok',l:'✓ Permitido',c:'s-cel-ok'},{v:'no',l:'✗ No permitido',c:'s-cel-no'},{v:'conf',l:'⚠ Confiscado',c:'s-cel-conf'}],val,nv=>setRec(s.idx,day.id,'cel',nv)));
+      tr.appendChild(td);
+    });
+    if(!days.length){const td=document.createElement('td');td.className='col-cel';tr.appendChild(td);}
+    const cv=days.map(d=>(rec[d.id]||{}).cel||'');
+    const cconf=cv.filter(v=>v==='conf').length,cno=cv.filter(v=>v==='no').length;
+    const ccolor=cconf>0?'var(--cel-conf)':cno>0?'var(--absent)':'var(--text-muted)';
+    const ctd=document.createElement('td');ctd.className='col-sum sum-cell';
+    ctd.innerHTML=`<span style="color:${ccolor}">${cconf>0?cconf+' conf.':cno>0?cno+' inc.':'—'}</span>`;
+    tr.appendChild(ctd);
+
+    const otd=document.createElement('td');otd.className='col-obs';
+    const oinp=document.createElement('input');
+    oinp.type='text';
+    oinp.className='obs-input';
+    oinp.placeholder='Observación';
+    oinp.value=rec.obs||'';
+    oinp.addEventListener('change',()=>setObs(s.idx,oinp.value));
+    otd.appendChild(oinp);
+    tr.appendChild(otd);
+
+    const actd=document.createElement('td');
+    actd.className='sum-cell';
+    const delBtn=document.createElement('button');
+    delBtn.className='btn btn-danger';
+    delBtn.style.padding='5px 8px';
+    delBtn.style.fontSize='0.72rem';
+    delBtn.textContent='Eliminar';
+    delBtn.onclick=()=>deleteStudent(s.idx);
+    actd.appendChild(delBtn);
+    tr.appendChild(actd);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function mkSel(opts,val,onChange){
+  const sel=document.createElement('select');
+  sel.className='cell-sel '+(opts.find(o=>o.v===val)||opts[0]).c;
+  opts.forEach(o=>{const op=document.createElement('option');op.value=o.v;op.textContent=o.l;if(o.v===val)op.selected=true;sel.appendChild(op);});
+  sel.addEventListener('change',function(){this.className='cell-sel '+(opts.find(o=>o.v===this.value)||opts[0]).c;onChange(this.value);});
+  return sel;
+}
+
+function setRec(idx,dayId,field,val){
+  if(!records[currentSheet][idx])records[currentSheet][idx]={};
+  if(!records[currentSheet][idx][dayId])records[currentSheet][idx][dayId]={};
+  records[currentSheet][idx][dayId][field]=val;
+  updateStats();scheduleSync();
+}
+
+function setObs(idx,val){
+  if(!records[currentSheet][idx])records[currentSheet][idx]={};
+  records[currentSheet][idx].obs=val;
+  scheduleSync();
+}
+
+function openPopup(idx,dayId,btn,cur){
+  popupIdx=idx;popupDayId=dayId;
+  const day=days.find(d=>d.id===dayId);
+  document.getElementById('popupTitle').textContent='Asistencia · '+fmtFull(day?.date||'');
+  ['','present','absent','late','excuse'].forEach((v,i)=>document.getElementById(`pOpt${i}`).classList.toggle('active',v===cur));
+  const menu=document.getElementById('popupMenu');menu.style.display='block';
+  const rect=btn.getBoundingClientRect();
+  const top=rect.bottom+4,left=Math.min(rect.left,window.innerWidth-200);
+  menu.style.top=(top+180>window.innerHeight?rect.top-184:top)+'px';
+  menu.style.left=left+'px';
+  document.getElementById('popupOverlay').classList.add('open');
+}
+function setAttendance(val){
+  if(popupIdx===null)return;
+  setRec(popupIdx,popupDayId,'asist',val);
+  closePopup();renderBody();
+}
+function closePopup(){
+  document.getElementById('popupOverlay').classList.remove('open');
+  document.getElementById('popupMenu').style.display='none';
+  popupIdx=null;popupDayId=null;
+}
+
+
+function addStudent(){
+  const apellidos = prompt('Apellidos del estudiante:');
+  if(apellidos === null) return;
+  const ap = apellidos.trim();
+  if(!ap){
+    showToast('⚠ Debes escribir los apellidos');
+    return;
+  }
+
+  const nombres = prompt('Nombres del estudiante:');
+  if(nombres === null) return;
+  const nom = nombres.trim();
+  if(!nom){
+    showToast('⚠ Debes escribir los nombres');
+    return;
+  }
+
+  SHEETS[currentSheet].push({ apellidos: ap, nombres: nom });
+
+  const newIdx = SHEETS[currentSheet].length - 1;
+  if(!records[currentSheet]) records[currentSheet] = {};
+  if(!records[currentSheet][newIdx]) records[currentSheet][newIdx] = {};
+
+  days.forEach(day => {
+    records[currentSheet][newIdx][day.id] = {
+      asist: '',
+      uni: '',
+      llam: '',
+      cel: ''
+    };
+  });
+
+  records[currentSheet][newIdx].obs = '';
+
+  renderTable();
+  updateStats();
+  scheduleSync();
+  showToast('✓ Estudiante agregado en ' + currentSheet);
+}
+
+function deleteStudent(idx){
+  const st = SHEETS[currentSheet] && SHEETS[currentSheet][idx];
+  if(!st) return;
+
+  const ok = confirm(`¿Eliminar a ${st.apellidos} ${st.nombres} del curso ${currentSheet}?`);
+  if(!ok) return;
+
+  SHEETS[currentSheet].splice(idx, 1);
+
+  const oldRecords = records[currentSheet] || {};
+  const newRecords = {};
+  Object.keys(oldRecords).forEach(k => {
+    const n = Number(k);
+    if(Number.isNaN(n) || n === idx) return;
+    newRecords[n > idx ? n - 1 : n] = oldRecords[k];
+  });
+  records[currentSheet] = newRecords;
+
+  renderTable();
+  updateStats();
+  scheduleSync();
+  showToast('🗑️ Estudiante eliminado de ' + currentSheet);
+}
+
+function updateStats(){
+  let a=0,t=0,n=0,u=0,l=0,c=0;
+  SHEETS[currentSheet].forEach((s,idx)=>{
+    const rec=records[currentSheet][idx]||{};
+    days.forEach(day=>{
+      const r=rec[day.id]||{};
+      if(r.asist==='present')a++;if(r.asist==='late')t++;if(r.asist==='absent')n++;
+      if(r.uni==='mal')u++;if(r.llam&&r.llam!=='')l++;if(r.cel==='no'||r.cel==='conf')c++;
+    });
+  });
+  ['sAsist','sTarde','sNoAsist','sUniMal','sLlam','sCel'].forEach((id,i)=>{document.getElementById(id).textContent=[a,t,n,u,l,c][i];});
+}
+
+function addToday(){
+  const d=new Date().toISOString().split('T')[0];
+  if(days.find(x=>x.date===d)){showToast('⚠ Ya existe una clase para hoy ('+fmt(d)+')');return;}
+  days.push({id:++dayIdCounter,date:d,label:''});
+  renderTable();scheduleSync();showToast('✓ Clase del '+fmtFull(d)+' agregada');
+  setTimeout(()=>{const w=document.querySelector('.table-wrap');if(w)w.scrollLeft=w.scrollWidth;},60);
+}
+function openAddDayModal(){
+  document.getElementById('newDayDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('newDayLabel').value='';
+  openModal('addDayModal');
+}
+function addDay(){
+  const d=document.getElementById('newDayDate').value,lbl=document.getElementById('newDayLabel').value.trim();
+  if(!d){showToast('⚠ Selecciona una fecha');return;}
+  if(days.find(x=>x.date===d)){showToast('⚠ Ya existe una clase para '+fmt(d));closeModal('addDayModal');return;}
+  days.push({id:++dayIdCounter,date:d,label:lbl});
+  days.sort((a,b)=>a.date.localeCompare(b.date));
+  closeModal('addDayModal');renderTable();scheduleSync();showToast('✓ Clase del '+fmtFull(d)+' agregada');
+  setTimeout(()=>{const w=document.querySelector('.table-wrap');if(w)w.scrollLeft=w.scrollWidth;},60);
+}
+function openEditDayModal(id){
+  const day=days.find(d=>d.id===id);if(!day)return;
+  document.getElementById('editDayDate').value=day.date;
+  document.getElementById('editDayLabel').value=day.label||'';
+  document.getElementById('editDayId').value=id;
+  openModal('editDayModal');
+}
+function saveEditDay(){
+  const id=parseInt(document.getElementById('editDayId').value),day=days.find(d=>d.id===id);if(!day)return;
+  day.date=document.getElementById('editDayDate').value||day.date;
+  day.label=document.getElementById('editDayLabel').value.trim();
+  days.sort((a,b)=>a.date.localeCompare(b.date));
+  closeModal('editDayModal');renderTable();scheduleSync();showToast('✓ Clase actualizada');
+}
+function deleteDay(){
+  const id=parseInt(document.getElementById('editDayId').value);
+  days=days.filter(d=>d.id!==id);
+  Object.keys(records[currentSheet]||{}).forEach(i=>{ if(records[currentSheet][i]) delete records[currentSheet][i][id]; });
+  closeModal('editDayModal');updateCounter();renderTable();scheduleSync();showToast('🗑 Clase eliminada');
+}
+function updateCounter(){const el=document.getElementById('claseCounter');if(el)el.textContent=`📅 ${days.length} clase${days.length!==1?'s':''} registrada${days.length!==1?'s':''}`;}
+
+function exportCSV(){
+  const students=SHEETS[currentSheet],headers=['#','APELLIDOS','NOMBRES'];
+  days.forEach(d=>{const l=fmt(d.date)+(d.label?' '+d.label:'');['Asistencia','Uniforme','Llamado','Celular'].forEach(c=>headers.push(l+' - '+c));});
+  headers.push('Total Asistencias','Total Tardanzas','Total Inasistencias','Uni. Incorrectos','Total Llamados','Incidentes Celular');
+  const rows=[headers];
+  students.forEach((s,idx)=>{
+    const rec=records[currentSheet][idx]||{},row=[idx+1,s.apellidos,s.nombres];
+    let ca=0,ct=0,cn=0,cu=0,cl=0,cc=0;
+    days.forEach(d=>{const r=rec[d.id]||{};row.push(r.asist||'',r.uni||'',r.llam||'',r.cel||'');
+      if(r.asist==='present')ca++;if(r.asist==='late')ct++;if(r.asist==='absent')cn++;
+      if(r.uni==='mal')cu++;if(r.llam&&r.llam!=='')cl++;if(r.cel==='no'||r.cel==='conf')cc++;});
+    row.push(ca,ct,cn,cu,cl,cc);rows.push(row);
+  });
+  const csv=rows.map(r=>r.map(x=>`"${x}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`convivencia_${currentSheet.replace(/ /g,'_')}.csv`;a.click();URL.revokeObjectURL(url);
+  showToast('⬇ CSV exportado');
+}
+
+function scheduleSync(){clearTimeout(syncTimer);setSyncStatus('pending');syncTimer=setTimeout(syncAll,1500);}
+function setSyncStatus(s){
+  const bar=document.getElementById('syncBar'),icon=document.getElementById('syncIcon'),msg=document.getElementById('syncMsg'),spin=document.getElementById('syncSpinner');
+  if(!bar)return;
+  const cfg={loading:['#eaf2fb','#1a5276','⏳','Cargando datos...'],pending:['#fef9e7','#9a7d0a','✏️','Guardando...'],ok:['#eafaf1','#1e8449','✅','Guardado en Google Sheets — '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})],error:['#fdedec','#922b21','❌','Error al guardar']};
+  const[bg,color,ic,ms]=cfg[s]||cfg.ok;
+  bar.style.background=bg;bar.style.color=color;icon.textContent=ic;msg.textContent=ms;
+  spin.style.display=(s==='loading'||s==='pending')?'inline':'none';
+}
+async function syncAll(){
+  try{
+    const coursesPayload={};
+    Object.keys(SHEETS).forEach(sn=>{
+      coursesPayload[sn]={
+        students:SHEETS[sn],
+        days:(courseMeta[sn]&&Array.isArray(courseMeta[sn].days))?courseMeta[sn].days:[],
+        records:records[sn]||{}
+      };
+    });
+    const res=await fetch(SHEETS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({courses:coursesPayload})
+    });
+    const json=await res.json();
+    if(!json.ok) throw new Error(json.error||'No se pudo guardar');
+    setSyncStatus('ok');
+  }catch(e){
+    console.error(e);
+    setSyncStatus('error');
+  }
+}
+async function loadFromSheets(){
+  setSyncStatus('loading');
+  try{
+    const res=await fetch(SHEETS_URL+'?t='+Date.now()),json=await res.json();
+    if(json.ok&&json.config&&json.config.courses){
+      const savedCourses=json.config.courses||{};
+      Object.keys(savedCourses).forEach(sheet=>{
+        if(Array.isArray(savedCourses[sheet].students)) SHEETS[sheet]=savedCourses[sheet].students;
+      });
+      Object.keys(SHEETS).forEach(sheet=>{
+        const saved=savedCourses[sheet]||{};
+        if(Array.isArray(saved.students)) SHEETS[sheet]=saved.students;
+        courseMeta[sheet]={
+          days:Array.isArray(saved.days)?saved.days:[],
+          dayIdCounter:(Array.isArray(saved.days)?saved.days.reduce((m,d)=>Math.max(m,Number(d.id)||0),0):0)
+        };
+        records[sheet]=(saved.records&&typeof saved.records==='object')?saved.records:{};
+      });
+    }
+    setSyncStatus('ok');
+  }catch(e){
+    console.error(e);
+    setSyncStatus('error');
+  }
+  renderTabs();renderTable();updateStats();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
+
+loadFromSheets();
+</script>
+</body>
+</html>
